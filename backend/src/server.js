@@ -1,3 +1,8 @@
+import dns from 'node:dns';
+try {
+  dns.setDefaultResultOrder('ipv6first');
+} catch (e) {}
+
 import dotenv from 'dotenv';
 dotenv.config();
 
