@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  REJECTED
+  INACTIVE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  rollNumber   String?       @unique
+  passwordHash String
+  role         Role          @default(STUDENT)
+  status       UserStatus    @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Teacher relationships
+  taughtCourses CourseTeacher[]
+
+  // Student relationships
+  enrollments   Enrollment[]
+  attendances   Attendance[]
+  marks         Marks[]
+
+  @@map("users")
+}
+
+model Course {
+  id          String          @id @default(uuid())
+  courseCode  String          @unique
+  courseName  String
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  teachers    CourseTeacher[]
+  enrollments Enrollment[]
+  attendances Attendance[]
+  marks       Marks[]
+
+  @@map("courses")
+}
+
+model CourseTeacher {
+  id         String   @id @default(uuid())
+  teacherId  String
+  courseId   String
+  assignedAt DateTime @default(now())
+
+  teacher    User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, courseId])
+  @@map("course_teachers")
+}
+
+model Enrollment {
+  id             String   @id @default(uuid())
+  studentId      String
+  courseId       String
+  enrollmentDate DateTime @default(now())
+
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@map("enrollments")
+}
+
+model Attendance {
+  id        String           @id @default(uuid())
+  studentId String
+  courseId  String
+  date      DateTime
+  status    AttendanceStatus @default(PRESENT)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  student   User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId, date])
+  @@map("attendances")
+}
+
+model Marks {
+  id             String   @id @default(uuid())
+  studentId      String
+  courseId       String
+  assessmentName String
+  maxMarks       Float
+  obtainedMarks  Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId, assessmentName])
+  @@map("marks")
+}
