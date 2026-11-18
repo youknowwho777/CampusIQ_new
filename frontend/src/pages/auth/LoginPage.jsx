@@ -42,10 +42,10 @@ export const LoginPage = () => {
       setEmail('admin@campusiq.edu');
       setPassword('Password123!');
     } else if (role === 'teacher') {
-      setEmail('turing@campusiq.edu');
+      setEmail('anil.kumar@campusiq.edu');
       setPassword('Password123!');
     } else if (role === 'student') {
-      setEmail('student1@campusiq.edu');
+      setEmail('naruto@campusiq.edu');
       setPassword('Password123!');
     }
     setError('');

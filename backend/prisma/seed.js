@@ -4,33 +4,79 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('--- Starting CampusIQ Seed Script ---');
+  console.log('--- Starting CampusIQ Seed Script on Cloud Neon DB ---');
 
   const defaultPassword = 'Password123!';
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(defaultPassword, salt);
 
-  // 1. Create or update Admin
+  // 1. Create Admin: Siddarth Reddy
   const admin = await prisma.user.upsert({
     where: { email: 'admin@campusiq.edu' },
-    update: { passwordHash, status: 'ACTIVE' },
+    update: { name: 'Siddarth Reddy', passwordHash, status: 'ACTIVE' },
     create: {
-      name: 'System Administrator',
+      name: 'Siddarth Reddy',
       email: 'admin@campusiq.edu',
       passwordHash,
       role: 'ADMIN',
       status: 'ACTIVE',
     },
   });
-  console.log('✓ Admin seeded:', admin.email);
+  console.log('✓ Admin seeded:', admin.name, `(${admin.email})`);
 
-  // 2. Create or update 5 Teachers
+  // 2. Create Courses
+  const courseData = [
+    {
+      courseCode: 'SE301',
+      courseName: 'Software Engineering',
+      description: 'Software development life cycles, agile methodologies, system design patterns, and RESTful architectures.',
+    },
+    {
+      courseCode: 'IS301',
+      courseName: 'Information Security',
+      description: 'Network defense, encryption protocols, access controls, risk analysis, and vulnerability mitigation.',
+    },
+    {
+      courseCode: 'IOT301',
+      courseName: 'Internet of Things',
+      description: 'Embedded microcontrollers, sensor telemetry, edge computing, and wireless IoT mesh communication.',
+    },
+    {
+      courseCode: 'ML401',
+      courseName: 'Machine Learning',
+      description: 'Supervised and unsupervised models, neural networks, feature engineering, and statistical learning.',
+    },
+    {
+      courseCode: 'ISE402',
+      courseName: 'Information Security (Elective)',
+      description: 'Advanced cryptography, zero-trust security frameworks, cloud security posture, and forensic auditing.',
+    },
+    {
+      courseCode: 'WD201',
+      courseName: 'Web Development',
+      description: 'Modern full-stack web architectures, React frontend development, responsive UI, and Node.js REST APIs.',
+    },
+  ];
+
+  const courses = [];
+  for (const c of courseData) {
+    const course = await prisma.course.upsert({
+      where: { courseCode: c.courseCode },
+      update: { courseName: c.courseName, description: c.description },
+      create: c,
+    });
+    courses.push(course);
+  }
+  console.log(`✓ ${courses.length} Courses seeded`);
+
+  // 3. Create Teachers
   const teacherData = [
-    { name: 'Dr. Alan Turing', email: 'turing@campusiq.edu' },
-    { name: 'Dr. Grace Hopper', email: 'hopper@campusiq.edu' },
-    { name: 'Dr. Donald Knuth', email: 'knuth@campusiq.edu' },
-    { name: 'Dr. Ada Lovelace', email: 'lovelace@campusiq.edu' },
-    { name: 'Dr. Claude Shannon', email: 'shannon@campusiq.edu' },
+    { name: 'Anil Kumar', email: 'anil.kumar@campusiq.edu', courseIndex: 0 },
+    { name: 'Narendra', email: 'narendra@campusiq.edu', courseIndex: 1 },
+    { name: 'Karunya Sai', email: 'karunya.sai@campusiq.edu', courseIndex: 2 },
+    { name: 'Sidhardhan Kanna', email: 'sidhardhan.kanna@campusiq.edu', courseIndex: 3 },
+    { name: 'Vikram (Sidhardhan)', email: 'vikram@campusiq.edu', courseIndex: 4 },
+    { name: 'Adharana Kumar', email: 'adharana.kumar@campusiq.edu', courseIndex: 5 },
   ];
 
   const teachers = [];
@@ -47,53 +93,9 @@ async function main() {
       },
     });
     teachers.push(teacher);
-  }
-  console.log(`✓ ${teachers.length} Teachers seeded`);
 
-  // 3. Create or update 5 Courses
-  const courseData = [
-    {
-      courseCode: 'CS101',
-      courseName: 'Introduction to Computer Science',
-      description: 'Foundations of computation, problem-solving, and algorithmic thinking.',
-    },
-    {
-      courseCode: 'CS201',
-      courseName: 'Data Structures & Algorithms',
-      description: 'Linear & non-linear data structures, trees, graphs, sorting, and complexity analysis.',
-    },
-    {
-      courseCode: 'CS301',
-      courseName: 'Database Management Systems',
-      description: 'Relational data modeling, SQL queries, transactions, normalization, and indexing.',
-    },
-    {
-      courseCode: 'CS401',
-      courseName: 'Software Engineering & Architecture',
-      description: 'Software development life cycles, agile methodology, design patterns, and RESTful APIs.',
-    },
-    {
-      courseCode: 'CS501',
-      courseName: 'Computer Networks & Security',
-      description: 'TCP/IP architecture, socket programming, routing, encryption, and secure communications.',
-    },
-  ];
-
-  const courses = [];
-  for (const c of courseData) {
-    const course = await prisma.course.upsert({
-      where: { courseCode: c.courseCode },
-      update: { courseName: c.courseName, description: c.description },
-      create: c,
-    });
-    courses.push(course);
-  }
-  console.log(`✓ ${courses.length} Courses seeded`);
-
-  // 4. Assign one Teacher to each Course
-  for (let i = 0; i < courses.length; i++) {
-    const teacher = teachers[i];
-    const course = courses[i];
+    // Assign to designated course
+    const course = courses[t.courseIndex];
     await prisma.courseTeacher.upsert({
       where: {
         teacherId_courseId: {
@@ -108,15 +110,30 @@ async function main() {
       },
     });
   }
-  console.log('✓ Course-Teacher assignments seeded');
+  console.log(`✓ ${teachers.length} Faculty Teachers created and assigned to courses`);
 
-  // 5. Create 20 Active Students
+  // 4. Create Students (User requested custom list)
   const studentNames = [
-    'Alexander Smith', 'Emma Watson', 'James Anderson', 'Sophia Martinez',
-    'Benjamin Clark', 'Olivia Taylor', 'William Thomas', 'Isabella White',
-    'Lucas Harris', 'Mia Martin', 'Henry Jackson', 'Charlotte Thompson',
-    'Ethan Garcia', 'Amelia Robinson', 'Daniel Lewis', 'Harper Walker',
-    'Matthew Hall', 'Evelyn Allen', 'David Young', 'Abigail King',
+    'Naruto',
+    'Sasuke',
+    'Gojo',
+    'Luffy',
+    'Mikasa',
+    'Hinata',
+    'Levi',
+    'Doraemon',
+    'Shinchan',
+    'Nobita',
+    'Ben 10',
+    'Tom',
+    'Jerry',
+    'Goku',
+    'Tanjiro',
+    'Saitama',
+    'Zoro',
+    'Itachi',
+    'Ash Ketchum',
+    'Peter Parker',
   ];
 
   const students = [];
@@ -124,7 +141,8 @@ async function main() {
     const index = i + 1;
     const pad = index.toString().padStart(3, '0');
     const rollNumber = `CIQ-2026-${pad}`;
-    const email = `student${index}@campusiq.edu`;
+    const cleanName = studentNames[i].toLowerCase().replace(/[^a-z0-9]/g, '');
+    const email = `${cleanName}@campusiq.edu`;
 
     const student = await prisma.user.upsert({
       where: { email },
@@ -140,18 +158,18 @@ async function main() {
     });
     students.push(student);
   }
-  console.log(`✓ ${students.length} Active Students seeded`);
+  console.log(`✓ ${students.length} Active Students seeded (${studentNames.slice(0, 5).join(', ')}, ...)`);
 
-  // 6. Create 2 Pending Students for Admin approval demo
+  // 5. Create 2 Pending Registrations for Admin Approval Demo
   const pendingData = [
-    { name: 'Sarah Connor', email: 'sarah.connor@campusiq.edu', rollNumber: 'CIQ-2026-091' },
-    { name: 'John Doe', email: 'john.doe@campusiq.edu', rollNumber: 'CIQ-2026-092' },
+    { name: 'Light Yagami', email: 'light@campusiq.edu', rollNumber: 'CIQ-2026-091' },
+    { name: 'L Lawliet', email: 'lawliet@campusiq.edu', rollNumber: 'CIQ-2026-092' },
   ];
 
   for (const p of pendingData) {
     await prisma.user.upsert({
       where: { email: p.email },
-      update: { status: 'PENDING' },
+      update: { name: p.name, rollNumber: p.rollNumber, status: 'PENDING' },
       create: {
         name: p.name,
         email: p.email,
@@ -162,44 +180,34 @@ async function main() {
       },
     });
   }
-  console.log('✓ 2 Pending Registrations seeded for demo approval');
+  console.log('✓ 2 Pending Student Registrations seeded for demo approval');
 
-  // 7. Enroll Students into Courses
-  // Student 1 to 10 in CS101, CS201, CS301
-  // Student 6 to 15 in CS201, CS301, CS401
-  // Student 11 to 20 in CS301, CS401, CS501
-  // Student 1 to 5 in CS501
-  const enrollmentsCount = { total: 0 };
+  // 6. Enroll Students into Courses (Batch insertion)
+  const enrollmentList = [];
   for (let i = 0; i < students.length; i++) {
     const student = students[i];
-    // Each student enrolled in at least 3 courses
     const studentCourses = [
       courses[i % courses.length],
       courses[(i + 1) % courses.length],
       courses[(i + 2) % courses.length],
+      courses[(i + 3) % courses.length],
     ];
 
     for (const course of studentCourses) {
-      await prisma.enrollment.upsert({
-        where: {
-          studentId_courseId: {
-            studentId: student.id,
-            courseId: course.id,
-          },
-        },
-        update: {},
-        create: {
-          studentId: student.id,
-          courseId: course.id,
-        },
+      enrollmentList.push({
+        studentId: student.id,
+        courseId: course.id,
       });
-      enrollmentsCount.total++;
     }
   }
-  console.log(`✓ Student course enrollments verified (${enrollmentsCount.total} enrollments)`);
 
-  // 8. Seed Realistic Attendance
-  // Generate 7 distinct past class dates
+  await prisma.enrollment.createMany({
+    data: enrollmentList,
+    skipDuplicates: true,
+  });
+  console.log(`✓ Student enrollments confirmed (${enrollmentList.length} total enrollments)`);
+
+  // 7. Seed Realistic Attendance Records (Batch insertion)
   const dates = [];
   for (let d = 14; d >= 1; d -= 2) {
     const date = new Date();
@@ -208,92 +216,75 @@ async function main() {
     dates.push(date);
   }
 
-  let attendanceCount = 0;
+  const allAttendance = [];
   for (const course of courses) {
-    const enrolledStudents = await prisma.enrollment.findMany({
+    const enrolled = await prisma.enrollment.findMany({
       where: { courseId: course.id },
       select: { studentId: true },
     });
 
     for (const date of dates) {
-      for (let sIdx = 0; sIdx < enrolledStudents.length; sIdx++) {
-        const studentId = enrolledStudents[sIdx].studentId;
-        // Deterministic realistic status pattern (approx 85% present, 10% absent, 5% late)
+      for (let sIdx = 0; sIdx < enrolled.length; sIdx++) {
+        const studentId = enrolled[sIdx].studentId;
         let status = 'PRESENT';
-        const hash = (sIdx * 7 + date.getDate() * 13) % 20;
+        const hash = (sIdx * 7 + date.getDate() * 11) % 20;
         if (hash === 0 || hash === 1) status = 'ABSENT';
         else if (hash === 2) status = 'LATE';
 
-        await prisma.attendance.upsert({
-          where: {
-            studentId_courseId_date: {
-              studentId,
-              courseId: course.id,
-              date,
-            },
-          },
-          update: { status },
-          create: {
-            studentId,
-            courseId: course.id,
-            date,
-            status,
-          },
+        allAttendance.push({
+          studentId,
+          courseId: course.id,
+          date,
+          status,
         });
-        attendanceCount++;
       }
     }
   }
-  console.log(`✓ ${attendanceCount} Attendance records seeded across all courses`);
 
-  // 9. Seed Realistic Marks
+  await prisma.attendance.createMany({
+    data: allAttendance,
+    skipDuplicates: true,
+  });
+  console.log(`✓ ${allAttendance.length} Attendance records seeded across courses`);
+
+  // 8. Seed Realistic Marks (Batch insertion)
   const assessments = [
     { name: 'Midterm Examination', max: 50 },
     { name: 'Quiz 1 - Fundamentals', max: 20 },
-    { name: 'Practical Lab Assignment', max: 30 },
+    { name: 'Practical Lab Assessment', max: 30 },
   ];
 
-  let marksCount = 0;
+  const allMarks = [];
   for (const course of courses) {
-    const enrolledStudents = await prisma.enrollment.findMany({
+    const enrolled = await prisma.enrollment.findMany({
       where: { courseId: course.id },
       select: { studentId: true },
     });
 
     for (const assessment of assessments) {
-      for (let sIdx = 0; sIdx < enrolledStudents.length; sIdx++) {
-        const studentId = enrolledStudents[sIdx].studentId;
-        // Realistic obtained marks (between 65% and 95% of max)
-        const factor = 0.65 + (((sIdx * 11 + assessment.max) % 30) / 100);
+      for (let sIdx = 0; sIdx < enrolled.length; sIdx++) {
+        const studentId = enrolled[sIdx].studentId;
+        const factor = 0.68 + (((sIdx * 9 + assessment.max) % 28) / 100);
         const obtainedMarks = Math.round(assessment.max * factor * 10) / 10;
 
-        await prisma.marks.upsert({
-          where: {
-            studentId_courseId_assessmentName: {
-              studentId,
-              courseId: course.id,
-              assessmentName: assessment.name,
-            },
-          },
-          update: {
-            maxMarks: assessment.max,
-            obtainedMarks,
-          },
-          create: {
-            studentId,
-            courseId: course.id,
-            assessmentName: assessment.name,
-            maxMarks: assessment.max,
-            obtainedMarks,
-          },
+        allMarks.push({
+          studentId,
+          courseId: course.id,
+          assessmentName: assessment.name,
+          maxMarks: assessment.max,
+          obtainedMarks,
         });
-        marksCount++;
       }
     }
   }
-  console.log(`✓ ${marksCount} Assessment Marks records seeded`);
 
-  console.log('--- Database Seeding Completed Successfully! ---');
+  await prisma.marks.createMany({
+    data: allMarks,
+    skipDuplicates: true,
+  });
+  console.log(`✓ ${allMarks.length} Academic Marks records seeded`);
+
+  console.log('\n--- Cloud Neon DB Seeding Completed Successfully! ---');
 }
 
 main()
