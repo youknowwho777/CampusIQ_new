@@ -48,8 +48,8 @@ async function main() {
     },
     {
       courseCode: 'ISE402',
-      courseName: 'Information Security (Elective)',
-      description: 'Advanced cryptography, zero-trust security frameworks, cloud security posture, and forensic auditing.',
+      courseName: 'Communication Systems',
+      description: 'Principles of analog and digital communication, modulation techniques, signal transmission, noise analysis, and wireless channels.',
     },
     {
       courseCode: 'WD201',
@@ -71,7 +71,7 @@ async function main() {
 
   // 3. Create Teachers
   const teacherData = [
-    { name: 'Anil Kumar', email: 'anil.kumar@campusiq.edu', courseIndex: 0 },
+    { name: 'Sandeep', email: 'sandeep@campusiq.edu', courseIndex: 0 },
     { name: 'Narendra', email: 'narendra@campusiq.edu', courseIndex: 1 },
     { name: 'Karunya Sai', email: 'karunya.sai@campusiq.edu', courseIndex: 2 },
     { name: 'Sidhardhan Kanna', email: 'sidhardhan.kanna@campusiq.edu', courseIndex: 3 },

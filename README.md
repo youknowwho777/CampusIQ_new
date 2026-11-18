@@ -22,11 +22,11 @@ For rapid demonstration and grading, the login page features **one-click demo au
 
 | Faculty Name | Email | Assigned Academic Course |
 | :--- | :--- | :--- |
-| **Anil Kumar** | `anil.kumar@campusiq.edu` | `SE301` — Software Engineering |
+| **Sandeep** | `sandeep@campusiq.edu` | `SE301` — Software Engineering |
 | **Narendra** | `narendra@campusiq.edu` | `IS301` — Information Security |
 | **Karunya Sai** | `karunya.sai@campusiq.edu` | `IOT301` — Internet of Things |
 | **Sidhardhan Kanna** | `sidhardhan.kanna@campusiq.edu` | `ML401` — Machine Learning |
-| **Vikram (Sidhardhan)** | `vikram@campusiq.edu` | `ISE402` — Information Security (Elective) |
+| **Vikram (Sidhardhan)** | `vikram@campusiq.edu` | `ISE402` — Communication Systems |
 | **Adharana Kumar** | `adharana.kumar@campusiq.edu` | `WD201` — Web Development |
 
 ---
